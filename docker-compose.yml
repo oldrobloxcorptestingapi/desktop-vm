@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  linux-desktop:
+    build: .
+    container_name: linux-desktop
+    ports:
+      - "6080:6080"   # → open http://localhost:6080 in your browser
+      - "5901:5901"   # → optional: connect a VNC client directly
+    environment:
+      USER_NAME: user
+      USER_PASSWORD: changeme      # ← change this!
+      RESOLUTION: 1280x768         # options: 1024x768, 1280x768, 1920x1080
+      VNC_PORT: 5901
+      NOVNC_PORT: 6080             # local dev; Fly.io overrides this to 8080 via fly.toml
+      VNC_DEPTH: 24
+    shm_size: "512mb"              # prevents browser crashes inside the VM
+    restart: unless-stopped
+    # Sandbox: no access to host network stack, no extra capabilities
+    network_mode: bridge
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID

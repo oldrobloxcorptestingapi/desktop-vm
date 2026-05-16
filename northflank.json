@@ -1,0 +1,46 @@
+{
+  "apiVersion": "v1.2",
+  "spec": [
+    {
+      "kind": "DeploymentService",
+      "apiVersion": "v1.2",
+      "metadata": {
+        "name": "linux-desktop",
+        "description": "Browser-accessible Linux desktop via noVNC + XFCE4"
+      },
+      "spec": {
+        "billing": {
+          "deploymentPlan": "nf-compute-20"
+        },
+        "deployment": {
+          "instances": 1,
+          "internal": {
+            "branch": "main",
+            "buildSHA": "latest"
+          },
+          "docker": {
+            "configType": "default"
+          }
+        },
+        "ports": [
+          {
+            "name": "novnc",
+            "internalPort": 8080,
+            "public": true,
+            "protocol": "HTTP",
+            "domains": []
+          }
+        ],
+        "runtimeEnvironment": {
+          "USER_NAME": "user",
+          "USER_PASSWORD": "changeme",
+          "RESOLUTION": "1280x768",
+          "VNC_PORT": "5901",
+          "NOVNC_PORT": "8080",
+          "VNC_DEPTH": "24"
+        },
+        "runtimeFiles": {}
+      }
+    }
+  ]
+}
