@@ -1,0 +1,19 @@
+#!/bin/bash
+# Unset SESSION_MANAGER to avoid GNOME conflicts
+unset SESSION_MANAGER
+# Unset DBUS_SESSION_BUS_ADDRESS — dbus-launch will create a new one
+unset DBUS_SESSION_BUS_ADDRESS
+
+export DISPLAY=:1
+
+# Start D-Bus session
+eval $(dbus-launch --sh-syntax --exit-with-session)
+
+# Disable XFCE compositor (can cause issues in VMs)
+xfconf-query -c xfwm4 -p /general/use_compositing -s false 2>/dev/null || true
+
+# Set a wallpaper color so it doesn't look blank on load
+xsetroot -solid "#1e1e2e" 2>/dev/null || true
+
+# Start XFCE4
+exec startxfce4
