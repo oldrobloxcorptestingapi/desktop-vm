@@ -29,6 +29,8 @@ RUN apt-get update && apt-get install -y \
     nano \
     htop \
     fonts-liberation \
+    firefox \
+    firefox-locale-en \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
