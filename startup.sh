@@ -29,7 +29,7 @@ chmod 600 /home/${USER_NAME}/.vnc/passwd
 cp /tmp/xstartup /home/${USER_NAME}/.vnc/xstartup
 chmod +x /home/${USER_NAME}/.vnc/xstartup
 
-# ── Disable screen locker via XFCE config ─────────────────────────────────────
+# ── Disable screen locker ─────────────────────────────────────────────────────
 mkdir -p /home/${USER_NAME}/.config/xfce4/xfconf/xfce-perchannel-xml
 
 cat > /home/${USER_NAME}/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-screensaver.xml << 'XMLEOF'
@@ -55,23 +55,53 @@ cat > /home/${USER_NAME}/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-ma
 </channel>
 XMLEOF
 
-# ── Set Midori as default browser ─────────────────────────────────────────────
+# ── Desktop shortcuts ─────────────────────────────────────────────────────────
+mkdir -p /home/${USER_NAME}/Desktop
 mkdir -p /home/${USER_NAME}/.local/share/applications
-cat > /home/${USER_NAME}/.local/share/applications/falkon.desktop << 'DESKEOF'
+
+# Falkon browser
+cat > /home/${USER_NAME}/Desktop/falkon.desktop << 'DESKEOF'
 [Desktop Entry]
-Name=Midori
+Name=Falkon Browser
 Comment=Lightweight Web Browser
 Exec=falkon %u
 Icon=falkon
 Terminal=false
 Type=Application
 Categories=Network;WebBrowser;
-MimeType=text/html;text/xml;application/xhtml+xml;
 StartupNotify=true
 DESKEOF
 
-# Set as default browser for the user
-mkdir -p /home/${USER_NAME}/.config
+# Synaptic package manager (runs with sudo, no password needed)
+cat > /home/${USER_NAME}/Desktop/synaptic.desktop << 'DESKEOF'
+[Desktop Entry]
+Name=App Store
+Comment=Install and manage applications
+Exec=sudo synaptic
+Icon=synaptic
+Terminal=false
+Type=Application
+Categories=System;PackageManager;
+StartupNotify=true
+DESKEOF
+
+# Terminal
+cat > /home/${USER_NAME}/Desktop/terminal.desktop << 'DESKEOF'
+[Desktop Entry]
+Name=Terminal
+Comment=Open a terminal
+Exec=xfce4-terminal
+Icon=utilities-terminal
+Terminal=false
+Type=Application
+Categories=System;TerminalEmulator;
+StartupNotify=true
+DESKEOF
+
+# Mark desktop files as trusted/executable
+chmod +x /home/${USER_NAME}/Desktop/*.desktop
+
+# ── Default browser ───────────────────────────────────────────────────────────
 cat > /home/${USER_NAME}/.config/mimeapps.list << 'MIMEEOF'
 [Default Applications]
 text/html=falkon.desktop
