@@ -13,13 +13,10 @@ if ! id "${USER_NAME}" &>/dev/null; then
     useradd -m -s /bin/bash "${USER_NAME}"
 fi
 
-# Set password explicitly using multiple methods to ensure it works
 echo "${USER_NAME}:${USER_PASSWORD}" | chpasswd
-echo "${USER_NAME}:${USER_PASSWORD}" | chpasswd -e 2>/dev/null || true
 
-# Ensure sudo without password
+# Passwordless sudo
 usermod -aG sudo "${USER_NAME}" 2>/dev/null || true
-# Remove existing entry and re-add cleanly
 sed -i "/^${USER_NAME}/d" /etc/sudoers
 echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
@@ -31,9 +28,8 @@ chmod 600 /home/${USER_NAME}/.vnc/passwd
 # ── Copy xstartup ─────────────────────────────────────────────────────────────
 cp /tmp/xstartup /home/${USER_NAME}/.vnc/xstartup
 chmod +x /home/${USER_NAME}/.vnc/xstartup
-chown -R ${USER_NAME}:${USER_NAME} /home/${USER_NAME}
 
-# ── Disable XFCE screen locker via config files ───────────────────────────────
+# ── Disable screen locker via XFCE config ─────────────────────────────────────
 mkdir -p /home/${USER_NAME}/.config/xfce4/xfconf/xfce-perchannel-xml
 
 cat > /home/${USER_NAME}/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-screensaver.xml << 'XMLEOF'
@@ -59,7 +55,23 @@ cat > /home/${USER_NAME}/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-ma
 </channel>
 XMLEOF
 
-chown -R ${USER_NAME}:${USER_NAME} /home/${USER_NAME}/.config
+# ── Firefox desktop entry — force --no-sandbox for this user ──────────────────
+mkdir -p /home/${USER_NAME}/.local/share/applications
+cat > /home/${USER_NAME}/.local/share/applications/firefox.desktop << 'DESKEOF'
+[Desktop Entry]
+Name=Firefox
+Comment=Web Browser
+Exec=firefox --no-sandbox %u
+Icon=firefox
+Terminal=false
+Type=Application
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml+xml;
+StartupNotify=true
+DESKEOF
+
+# ── Fix all ownership ─────────────────────────────────────────────────────────
+chown -R ${USER_NAME}:${USER_NAME} /home/${USER_NAME}
 
 # ── Clean stale VNC locks ─────────────────────────────────────────────────────
 rm -f /tmp/.X1-lock /tmp/.X11-unix/X1 2>/dev/null || true
