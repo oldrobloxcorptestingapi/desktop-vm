@@ -32,6 +32,12 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# ── Epiphany wrapper — disables WebKit sandbox (required in Docker) ───────────
+RUN mv /usr/bin/epiphany-browser /usr/bin/epiphany-browser.real && \
+    printf '#!/bin/bash\nexport WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1\nexport WEBKIT_DISABLE_COMPOSITING_MODE=1\nexec /usr/bin/epiphany-browser.real "$@"\n' \
+        > /usr/bin/epiphany-browser && \
+    chmod +x /usr/bin/epiphany-browser
+
 # ── Allow synaptic to run without password ───────────────────────────────────
 RUN echo 'ALL ALL=(ALL) NOPASSWD: /usr/sbin/synaptic' >> /etc/sudoers
 

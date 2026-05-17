@@ -6,14 +6,16 @@ export DISPLAY=:1
 
 eval $(dbus-launch --sh-syntax --exit-with-session)
 
+# Allow root to open GUI windows (needed for synaptic)
+xhost +local: 2>/dev/null || true
+
 # Disable compositing
 xfconf-query -c xfwm4 -p /general/use_compositing -s false 2>/dev/null || true
 
-# Disable screen locker and power management (causes password prompts in VMs)
+# Disable screen locker and power management
 xfconf-query -c xfce4-screensaver -p /lock/enabled -s false 2>/dev/null || true
 xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/lock-screen-suspend-hibernate -s false 2>/dev/null || true
 xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/blank-on-ac -s 0 2>/dev/null || true
-xfconf-query -c xfce4-session -p /shutdown/LockScreen -s false 2>/dev/null || true
 
 xsetroot -solid "#1e1e2e" 2>/dev/null || true
 

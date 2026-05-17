@@ -77,7 +77,7 @@ cat > /home/${USER_NAME}/Desktop/synaptic.desktop << 'DESKEOF'
 [Desktop Entry]
 Name=App Store
 Comment=Install and manage applications
-Exec=sudo synaptic
+Exec=sudo -E synaptic --display=:1
 Icon=synaptic
 Terminal=false
 Type=Application
