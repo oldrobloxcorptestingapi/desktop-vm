@@ -57,12 +57,12 @@ XMLEOF
 
 # ── Set Midori as default browser ─────────────────────────────────────────────
 mkdir -p /home/${USER_NAME}/.local/share/applications
-cat > /home/${USER_NAME}/.local/share/applications/midori.desktop << 'DESKEOF'
+cat > /home/${USER_NAME}/.local/share/applications/falkon.desktop << 'DESKEOF'
 [Desktop Entry]
 Name=Midori
 Comment=Lightweight Web Browser
-Exec=midori %u
-Icon=midori
+Exec=falkon %u
+Icon=falkon
 Terminal=false
 Type=Application
 Categories=Network;WebBrowser;
@@ -74,10 +74,10 @@ DESKEOF
 mkdir -p /home/${USER_NAME}/.config
 cat > /home/${USER_NAME}/.config/mimeapps.list << 'MIMEEOF'
 [Default Applications]
-text/html=midori.desktop
-x-scheme-handler/http=midori.desktop
-x-scheme-handler/https=midori.desktop
-x-scheme-handler/about=midori.desktop
+text/html=falkon.desktop
+x-scheme-handler/http=falkon.desktop
+x-scheme-handler/https=falkon.desktop
+x-scheme-handler/about=falkon.desktop
 MIMEEOF
 
 # ── Fix all ownership ─────────────────────────────────────────────────────────

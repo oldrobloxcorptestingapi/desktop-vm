@@ -29,13 +29,13 @@ RUN apt-get update && apt-get install -y \
     nano \
     htop \
     fonts-liberation \
-    midori \
+    falkon \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Set Midori as default browser ────────────────────────────────────────────
-RUN update-alternatives --set x-www-browser /usr/bin/midori 2>/dev/null || true && \
-    update-alternatives --set gnome-www-browser /usr/bin/midori 2>/dev/null || true
+RUN update-alternatives --set x-www-browser /usr/bin/falkon 2>/dev/null || true && \
+    update-alternatives --set gnome-www-browser /usr/bin/falkon 2>/dev/null || true
 
 # ── Create non-root user ─────────────────────────────────────────────────────
 RUN useradd -m -s /bin/bash ${USER_NAME} && \
