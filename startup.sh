@@ -60,12 +60,12 @@ mkdir -p /home/${USER_NAME}/Desktop
 mkdir -p /home/${USER_NAME}/.local/share/applications
 
 # Falkon browser
-cat > /home/${USER_NAME}/Desktop/falkon.desktop << 'DESKEOF'
+cat > /home/${USER_NAME}/Desktop/epiphany-browser.desktop << 'DESKEOF'
 [Desktop Entry]
-Name=Falkon Browser
+Name=Web Browser
 Comment=Lightweight Web Browser
-Exec=falkon %u
-Icon=falkon
+Exec=epiphany-browser --new-window %u
+Icon=epiphany
 Terminal=false
 Type=Application
 Categories=Network;WebBrowser;
@@ -104,10 +104,10 @@ chmod +x /home/${USER_NAME}/Desktop/*.desktop
 # ── Default browser ───────────────────────────────────────────────────────────
 cat > /home/${USER_NAME}/.config/mimeapps.list << 'MIMEEOF'
 [Default Applications]
-text/html=falkon.desktop
-x-scheme-handler/http=falkon.desktop
-x-scheme-handler/https=falkon.desktop
-x-scheme-handler/about=falkon.desktop
+text/html=epiphany-browser.desktop
+x-scheme-handler/http=epiphany-browser.desktop
+x-scheme-handler/https=epiphany-browser.desktop
+x-scheme-handler/about=epiphany-browser.desktop
 MIMEEOF
 
 # ── Fix all ownership ─────────────────────────────────────────────────────────
