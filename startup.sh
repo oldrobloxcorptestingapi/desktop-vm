@@ -55,20 +55,30 @@ cat > /home/${USER_NAME}/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-ma
 </channel>
 XMLEOF
 
-# ── Firefox desktop entry — force --no-sandbox for this user ──────────────────
+# ── Set Midori as default browser ─────────────────────────────────────────────
 mkdir -p /home/${USER_NAME}/.local/share/applications
-cat > /home/${USER_NAME}/.local/share/applications/firefox.desktop << 'DESKEOF'
+cat > /home/${USER_NAME}/.local/share/applications/midori.desktop << 'DESKEOF'
 [Desktop Entry]
-Name=Firefox
-Comment=Web Browser
-Exec=firefox --no-sandbox %u
-Icon=firefox
+Name=Midori
+Comment=Lightweight Web Browser
+Exec=midori %u
+Icon=midori
 Terminal=false
 Type=Application
 Categories=Network;WebBrowser;
 MimeType=text/html;text/xml;application/xhtml+xml;
 StartupNotify=true
 DESKEOF
+
+# Set as default browser for the user
+mkdir -p /home/${USER_NAME}/.config
+cat > /home/${USER_NAME}/.config/mimeapps.list << 'MIMEEOF'
+[Default Applications]
+text/html=midori.desktop
+x-scheme-handler/http=midori.desktop
+x-scheme-handler/https=midori.desktop
+x-scheme-handler/about=midori.desktop
+MIMEEOF
 
 # ── Fix all ownership ─────────────────────────────────────────────────────────
 chown -R ${USER_NAME}:${USER_NAME} /home/${USER_NAME}
