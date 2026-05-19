@@ -1,12 +1,13 @@
-FROM ubuntu:22.04
+FROM debian:12
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV USER_NAME=user
 ENV USER_PASSWORD=changeme
 ENV VNC_PORT=5901
 ENV NOVNC_PORT=8080
-ENV RESOLUTION=1024x576
-ENV VNC_DEPTH=16
+ENV RESOLUTION=1280x768
+ENV VNC_DEPTH=24
+ENV CLOUDFLARE_TUNNEL_TOKEN=""
 
 # ── System packages ──────────────────────────────────────────────────────────
 RUN apt-get update && apt-get install -y \
@@ -27,18 +28,39 @@ RUN apt-get update && apt-get install -y \
     nano \
     htop \
     fonts-liberation \
-    epiphany-browser \
+    gnupg \
+    ca-certificates \
+    apt-transport-https \
     synaptic \
+    xdg-utils \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# ── Epiphany wrapper — disables WebKit sandbox (required in Docker) ───────────
-RUN mv /usr/bin/epiphany-browser /usr/bin/epiphany-browser.real && \
-    printf '#!/bin/bash\nexport WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1\nexport WEBKIT_DISABLE_COMPOSITING_MODE=1\nexec /usr/bin/epiphany-browser.real "$@"\n' \
-        > /usr/bin/epiphany-browser && \
-    chmod +x /usr/bin/epiphany-browser
+# ── Google Chrome ─────────────────────────────────────────────────────────────
+RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
+        | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] \
+        http://dl.google.com/linux/chrome/deb/ stable main" \
+        > /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get update && \
+    apt-get install -y google-chrome-stable && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# ── Allow synaptic to run without password ───────────────────────────────────
+# ── Chrome wrapper — disables sandbox (required in Docker) ───────────────────
+RUN mv /usr/bin/google-chrome-stable /usr/bin/google-chrome-stable.real && \
+    printf '#!/bin/bash\nexec /usr/bin/google-chrome-stable.real --no-sandbox --disable-dev-shm-usage "$@"\n' \
+        > /usr/bin/google-chrome-stable && \
+    chmod +x /usr/bin/google-chrome-stable && \
+    ln -sf /usr/bin/google-chrome-stable /usr/bin/google-chrome
+
+# ── Cloudflare Tunnel ─────────────────────────────────────────────────────────
+RUN curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb \
+        -o /tmp/cloudflared.deb && \
+    dpkg -i /tmp/cloudflared.deb && \
+    rm /tmp/cloudflared.deb
+
+# ── Allow synaptic without password ──────────────────────────────────────────
 RUN echo 'ALL ALL=(ALL) NOPASSWD: /usr/sbin/synaptic' >> /etc/sudoers
 
 # ── Create non-root user ─────────────────────────────────────────────────────
@@ -50,15 +72,13 @@ RUN useradd -m -s /bin/bash ${USER_NAME} && \
 # ── noVNC symlink ────────────────────────────────────────────────────────────
 RUN ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html
 
-# ── Copy xstartup to /tmp ────────────────────────────────────────────────────
+# ── Copy support files ───────────────────────────────────────────────────────
 COPY xstartup /tmp/xstartup
 RUN chmod +x /tmp/xstartup
 
-# ── Supervisor config ────────────────────────────────────────────────────────
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN mkdir -p /var/log/supervisor
 
-# ── Entry point ──────────────────────────────────────────────────────────────
 COPY startup.sh /startup.sh
 RUN chmod +x /startup.sh
 
