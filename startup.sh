@@ -5,18 +5,21 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "  Starting Browser Linux Desktop"
 echo "  User:       ${USER_NAME}"
 echo "  Resolution: ${RESOLUTION}"
-echo "  Cloudflare: ${CLOUDFLARE_TUNNEL_TOKEN:+enabled}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# ── Remove any stale apt locks ────────────────────────────────────────────────
+rm -f /var/lib/apt/lists/lock
+rm -f /var/cache/apt/archives/lock
+rm -f /var/lib/dpkg/lock
+rm -f /var/lib/dpkg/lock-frontend
+dpkg --configure -a 2>/dev/null || true
 
 # ── Create user at runtime ────────────────────────────────────────────────────
 if ! id "${USER_NAME}" &>/dev/null; then
-    echo "Creating user: ${USER_NAME}"
     useradd -m -s /bin/bash "${USER_NAME}"
 fi
 
 echo "${USER_NAME}:${USER_PASSWORD}" | chpasswd
-
-# Passwordless sudo
 usermod -aG sudo "${USER_NAME}" 2>/dev/null || true
 sed -i "/^${USER_NAME}/d" /etc/sudoers
 echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
@@ -26,7 +29,7 @@ mkdir -p /home/${USER_NAME}/.vnc
 echo "${USER_PASSWORD}" | vncpasswd -f > /home/${USER_NAME}/.vnc/passwd
 chmod 600 /home/${USER_NAME}/.vnc/passwd
 
-# ── xstartup ─────────────────────────────────────────────────────────────────
+# ── xstartup ──────────────────────────────────────────────────────────────────
 cp /tmp/xstartup /home/${USER_NAME}/.vnc/xstartup
 chmod +x /home/${USER_NAME}/.vnc/xstartup
 
@@ -56,15 +59,32 @@ cat > /home/${USER_NAME}/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-ma
 </channel>
 XMLEOF
 
+# ── Synaptic wrapper script ───────────────────────────────────────────────────
+# Runs as root but with correct display env — most reliable approach in Docker
+cat > /usr/local/bin/launch-synaptic << 'SYNEOF'
+#!/bin/bash
+export DISPLAY=:1
+export XAUTHORITY=/root/.Xauthority
+xhost +local: 2>/dev/null || true
+# Clear any stale locks before opening
+rm -f /var/lib/apt/lists/lock
+rm -f /var/cache/apt/archives/lock
+rm -f /var/lib/dpkg/lock
+rm -f /var/lib/dpkg/lock-frontend
+dpkg --configure -a 2>/dev/null || true
+exec synaptic
+SYNEOF
+chmod +x /usr/local/bin/launch-synaptic
+
 # ── Desktop shortcuts ─────────────────────────────────────────────────────────
 mkdir -p /home/${USER_NAME}/Desktop
 
-cat > /home/${USER_NAME}/Desktop/chrome.desktop << 'DESKEOF'
+cat > /home/${USER_NAME}/Desktop/firefox.desktop << 'DESKEOF'
 [Desktop Entry]
-Name=Google Chrome
+Name=Firefox
 Comment=Web Browser
-Exec=google-chrome --no-sandbox --disable-dev-shm-usage %u
-Icon=google-chrome
+Exec=firefox --no-sandbox --disable-dev-shm-usage %u
+Icon=firefox-esr
 Terminal=false
 Type=Application
 Categories=Network;WebBrowser;
@@ -75,7 +95,7 @@ cat > /home/${USER_NAME}/Desktop/synaptic.desktop << 'DESKEOF'
 [Desktop Entry]
 Name=App Store
 Comment=Install and manage applications
-Exec=sudo -E synaptic --display=:1
+Exec=sudo -E /usr/local/bin/launch-synaptic
 Icon=synaptic
 Terminal=false
 Type=Application
@@ -101,12 +121,12 @@ chmod +x /home/${USER_NAME}/Desktop/*.desktop
 mkdir -p /home/${USER_NAME}/.config
 cat > /home/${USER_NAME}/.config/mimeapps.list << 'MIMEEOF'
 [Default Applications]
-text/html=google-chrome.desktop
-x-scheme-handler/http=google-chrome.desktop
-x-scheme-handler/https=google-chrome.desktop
+text/html=firefox-esr.desktop
+x-scheme-handler/http=firefox-esr.desktop
+x-scheme-handler/https=firefox-esr.desktop
 MIMEEOF
 
-# ── Fix all ownership ─────────────────────────────────────────────────────────
+# ── Fix ownership ─────────────────────────────────────────────────────────────
 chown -R ${USER_NAME}:${USER_NAME} /home/${USER_NAME}
 
 # ── Clean stale VNC locks ─────────────────────────────────────────────────────

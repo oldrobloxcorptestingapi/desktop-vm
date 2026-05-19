@@ -7,7 +7,6 @@ ENV VNC_PORT=5901
 ENV NOVNC_PORT=8080
 ENV RESOLUTION=1280x768
 ENV VNC_DEPTH=24
-ENV CLOUDFLARE_TUNNEL_TOKEN=""
 ENV NOVNC_VERSION=1.4.0
 
 # ── System packages ──────────────────────────────────────────────────────────
@@ -25,48 +24,30 @@ RUN apt-get update && apt-get install -y \
     sudo \
     curl \
     wget \
-    unzip \
     nano \
     htop \
     fonts-liberation \
-    gnupg \
     ca-certificates \
-    apt-transport-https \
     synaptic \
     xdg-utils \
-    python3 \
+    policykit-1 \
+    libgtk2.0-0 \
+    firefox-esr \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# ── noVNC from GitHub (newer, fixed version) ──────────────────────────────────
+# ── Firefox ESR wrapper — disables sandbox (required in Docker) ───────────────
+RUN mv /usr/bin/firefox-esr /usr/bin/firefox-esr.real && \
+    printf '#!/bin/bash\nexec /usr/bin/firefox-esr.real --no-sandbox --disable-dev-shm-usage "$@"\n' \
+        > /usr/bin/firefox-esr && \
+    chmod +x /usr/bin/firefox-esr && \
+    ln -sf /usr/bin/firefox-esr /usr/bin/firefox
+
+# ── noVNC from GitHub ─────────────────────────────────────────────────────────
 RUN curl -fsSL https://github.com/novnc/noVNC/archive/refs/tags/v${NOVNC_VERSION}.tar.gz \
         | tar -xz -C /opt && \
     mv /opt/noVNC-${NOVNC_VERSION} /opt/novnc && \
     ln -sf /opt/novnc/vnc.html /opt/novnc/index.html
-
-# ── Google Chrome ─────────────────────────────────────────────────────────────
-RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
-        | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg && \
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] \
-        http://dl.google.com/linux/chrome/deb/ stable main" \
-        > /etc/apt/sources.list.d/google-chrome.list && \
-    apt-get update && \
-    apt-get install -y google-chrome-stable && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# ── Chrome wrapper ───────────────────────────────────────────────────────────
-RUN mv /usr/bin/google-chrome-stable /usr/bin/google-chrome-stable.real && \
-    printf '#!/bin/bash\nexec /usr/bin/google-chrome-stable.real --no-sandbox --disable-dev-shm-usage "$@"\n' \
-        > /usr/bin/google-chrome-stable && \
-    chmod +x /usr/bin/google-chrome-stable && \
-    ln -sf /usr/bin/google-chrome-stable /usr/bin/google-chrome
-
-# ── Cloudflare Tunnel ─────────────────────────────────────────────────────────
-RUN curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb \
-        -o /tmp/cloudflared.deb && \
-    dpkg -i /tmp/cloudflared.deb && \
-    rm /tmp/cloudflared.deb
 
 # ── Allow synaptic without password ──────────────────────────────────────────
 RUN echo 'ALL ALL=(ALL) NOPASSWD: /usr/sbin/synaptic' >> /etc/sudoers
