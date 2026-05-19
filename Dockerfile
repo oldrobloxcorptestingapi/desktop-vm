@@ -8,6 +8,7 @@ ENV NOVNC_PORT=8080
 ENV RESOLUTION=1280x768
 ENV VNC_DEPTH=24
 ENV CLOUDFLARE_TUNNEL_TOKEN=""
+ENV NOVNC_VERSION=1.4.0
 
 # ── System packages ──────────────────────────────────────────────────────────
 RUN apt-get update && apt-get install -y \
@@ -16,7 +17,6 @@ RUN apt-get update && apt-get install -y \
     xfce4-terminal \
     tigervnc-standalone-server \
     tigervnc-common \
-    novnc \
     websockify \
     supervisor \
     dbus-x11 \
@@ -25,6 +25,7 @@ RUN apt-get update && apt-get install -y \
     sudo \
     curl \
     wget \
+    unzip \
     nano \
     htop \
     fonts-liberation \
@@ -33,8 +34,15 @@ RUN apt-get update && apt-get install -y \
     apt-transport-https \
     synaptic \
     xdg-utils \
+    python3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# ── noVNC from GitHub (newer, fixed version) ──────────────────────────────────
+RUN curl -fsSL https://github.com/novnc/noVNC/archive/refs/tags/v${NOVNC_VERSION}.tar.gz \
+        | tar -xz -C /opt && \
+    mv /opt/noVNC-${NOVNC_VERSION} /opt/novnc && \
+    ln -sf /opt/novnc/vnc.html /opt/novnc/index.html
 
 # ── Google Chrome ─────────────────────────────────────────────────────────────
 RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
@@ -47,7 +55,7 @@ RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# ── Chrome wrapper — disables sandbox (required in Docker) ───────────────────
+# ── Chrome wrapper ───────────────────────────────────────────────────────────
 RUN mv /usr/bin/google-chrome-stable /usr/bin/google-chrome-stable.real && \
     printf '#!/bin/bash\nexec /usr/bin/google-chrome-stable.real --no-sandbox --disable-dev-shm-usage "$@"\n' \
         > /usr/bin/google-chrome-stable && \
@@ -68,9 +76,6 @@ RUN useradd -m -s /bin/bash ${USER_NAME} && \
     echo "${USER_NAME}:${USER_PASSWORD}" | chpasswd && \
     usermod -aG sudo ${USER_NAME} && \
     echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
-# ── noVNC symlink ────────────────────────────────────────────────────────────
-RUN ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html
 
 # ── Copy support files ───────────────────────────────────────────────────────
 COPY xstartup /tmp/xstartup
