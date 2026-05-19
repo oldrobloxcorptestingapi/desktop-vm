@@ -31,17 +31,9 @@ RUN apt-get update && apt-get install -y \
     synaptic \
     xdg-utils \
     policykit-1 \
-    libgtk2.0-0 \
-    firefox-esr \
+    falkon \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-# ── Firefox ESR wrapper — disables sandbox (required in Docker) ───────────────
-RUN mv /usr/bin/firefox-esr /usr/bin/firefox-esr.real && \
-    printf '#!/bin/bash\nexec /usr/bin/firefox-esr.real --no-sandbox --disable-dev-shm-usage "$@"\n' \
-        > /usr/bin/firefox-esr && \
-    chmod +x /usr/bin/firefox-esr && \
-    ln -sf /usr/bin/firefox-esr /usr/bin/firefox
 
 # ── noVNC from GitHub ─────────────────────────────────────────────────────────
 RUN curl -fsSL https://github.com/novnc/noVNC/archive/refs/tags/v${NOVNC_VERSION}.tar.gz \

@@ -79,12 +79,12 @@ chmod +x /usr/local/bin/launch-synaptic
 # ── Desktop shortcuts ─────────────────────────────────────────────────────────
 mkdir -p /home/${USER_NAME}/Desktop
 
-cat > /home/${USER_NAME}/Desktop/firefox.desktop << 'DESKEOF'
+cat > /home/${USER_NAME}/Desktop/falkon.desktop << 'DESKEOF'
 [Desktop Entry]
-Name=Firefox
-Comment=Web Browser
-Exec=firefox --no-sandbox --disable-dev-shm-usage %u
-Icon=firefox-esr
+Name=Falkon
+Comment=Lightweight Web Browser
+Exec=falkon %u
+Icon=falkon
 Terminal=false
 Type=Application
 Categories=Network;WebBrowser;
@@ -121,9 +121,9 @@ chmod +x /home/${USER_NAME}/Desktop/*.desktop
 mkdir -p /home/${USER_NAME}/.config
 cat > /home/${USER_NAME}/.config/mimeapps.list << 'MIMEEOF'
 [Default Applications]
-text/html=firefox-esr.desktop
-x-scheme-handler/http=firefox-esr.desktop
-x-scheme-handler/https=firefox-esr.desktop
+text/html=falkon.desktop
+x-scheme-handler/http=falkon.desktop
+x-scheme-handler/https=falkon.desktop
 MIMEEOF
 
 # ── Fix ownership ─────────────────────────────────────────────────────────────
