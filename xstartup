@@ -9,14 +9,24 @@ eval $(dbus-launch --sh-syntax --exit-with-session)
 # Allow root to open GUI windows (needed for synaptic)
 xhost +local: 2>/dev/null || true
 
-# Disable compositing
-xfconf-query -c xfwm4 -p /general/use_compositing -s false 2>/dev/null || true
+# Kill compositor completely
+pkill xfwm4 2>/dev/null || true
+pkill compton 2>/dev/null || true
+pkill picom 2>/dev/null || true
 
-# Disable screen locker
+# Disable compositing, animations, shadows
+xfconf-query -c xfwm4 -p /general/use_compositing -s false 2>/dev/null || true
+xfconf-query -c xfwm4 -p /general/frame_opacity -s 100 2>/dev/null || true
+xfconf-query -c xfwm4 -p /general/show_frame_shadow -s false 2>/dev/null || true
+xfconf-query -c xfwm4 -p /general/show_popup_shadow -s false 2>/dev/null || true
+xfconf-query -c xfwm4 -p /general/show_dock_shadow -s false 2>/dev/null || true
+
+# Disable screen locker and power management
 xfconf-query -c xfce4-screensaver -p /lock/enabled -s false 2>/dev/null || true
 xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/lock-screen-suspend-hibernate -s false 2>/dev/null || true
 xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/blank-on-ac -s 0 2>/dev/null || true
 
+# Solid background — no wallpaper rendering overhead
 xsetroot -solid "#1e1e2e" 2>/dev/null || true
 
 exec startxfce4
