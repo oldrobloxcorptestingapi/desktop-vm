@@ -88,7 +88,7 @@ cat > /home/${USER_NAME}/Desktop/browser.desktop << 'DESKEOF'
 [Desktop Entry]
 Name=Falkon
 Comment=Lightweight Web Browser
-Exec=falkon %u
+Exec=falkon --no-sandbox --disable-gpu --disable-software-rasterizer %u
 Icon=falkon
 Terminal=false
 Type=Application

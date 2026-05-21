@@ -41,6 +41,12 @@ RUN curl -fsSL https://github.com/novnc/noVNC/archive/refs/tags/v${NOVNC_VERSION
     mv /opt/noVNC-${NOVNC_VERSION} /opt/novnc && \
     ln -sf /opt/novnc/vnc.html /opt/novnc/index.html
 
+# ── Falkon wrapper — disable GPU rendering (required in Docker) ───────────────
+RUN mv /usr/bin/falkon /usr/bin/falkon.real && \
+    printf '#!/bin/bash\nexec /usr/bin/falkon.real --no-sandbox --disable-gpu --disable-software-rasterizer "$@"\n' \
+        > /usr/bin/falkon && \
+    chmod +x /usr/bin/falkon
+
 # ── Allow synaptic without password ──────────────────────────────────────────
 RUN echo 'ALL ALL=(ALL) NOPASSWD: /usr/sbin/synaptic' >> /etc/sudoers
 
