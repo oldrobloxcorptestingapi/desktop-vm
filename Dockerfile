@@ -63,3 +63,10 @@ RUN chmod +x /startup.sh
 EXPOSE ${NOVNC_PORT} ${VNC_PORT}
 
 CMD ["/startup.sh"]
+
+# ── Clear any stale locks left over from build ───────────────────────────────
+RUN rm -f /var/lib/apt/lists/lock \
+          /var/cache/apt/archives/lock \
+          /var/lib/dpkg/lock \
+          /var/lib/dpkg/lock-frontend \
+          /run/apt/apt.pid 2>/dev/null || true

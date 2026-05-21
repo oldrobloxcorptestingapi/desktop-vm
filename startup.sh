@@ -7,12 +7,18 @@ echo "  User:       ${USER_NAME}"
 echo "  Resolution: ${RESOLUTION}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# ── Remove any stale apt locks ────────────────────────────────────────────────
+# ── Nuke ALL apt/dpkg locks ───────────────────────────────────────────────────
+echo "Clearing apt locks..."
 rm -f /var/lib/apt/lists/lock
 rm -f /var/cache/apt/archives/lock
 rm -f /var/lib/dpkg/lock
 rm -f /var/lib/dpkg/lock-frontend
+rm -f /run/apt/apt.pid
+rm -f /var/run/apt.pid
+# Fix any interrupted dpkg state
 dpkg --configure -a 2>/dev/null || true
+# Update apt cache so synaptic has fresh package lists
+apt-get update -qq 2>/dev/null || true
 
 # ── Create user at runtime ────────────────────────────────────────────────────
 if ! id "${USER_NAME}" &>/dev/null; then
@@ -59,18 +65,17 @@ cat > /home/${USER_NAME}/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-ma
 </channel>
 XMLEOF
 
-# ── Synaptic wrapper script ───────────────────────────────────────────────────
-# Runs as root but with correct display env — most reliable approach in Docker
+# ── Synaptic launch wrapper ───────────────────────────────────────────────────
 cat > /usr/local/bin/launch-synaptic << 'SYNEOF'
 #!/bin/bash
 export DISPLAY=:1
-export XAUTHORITY=/root/.Xauthority
 xhost +local: 2>/dev/null || true
-# Clear any stale locks before opening
+# Clear locks right before opening
 rm -f /var/lib/apt/lists/lock
 rm -f /var/cache/apt/archives/lock
 rm -f /var/lib/dpkg/lock
 rm -f /var/lib/dpkg/lock-frontend
+rm -f /run/apt/apt.pid
 dpkg --configure -a 2>/dev/null || true
 exec synaptic
 SYNEOF
@@ -79,7 +84,7 @@ chmod +x /usr/local/bin/launch-synaptic
 # ── Desktop shortcuts ─────────────────────────────────────────────────────────
 mkdir -p /home/${USER_NAME}/Desktop
 
-cat > /home/${USER_NAME}/Desktop/falkon.desktop << 'DESKEOF'
+cat > /home/${USER_NAME}/Desktop/browser.desktop << 'DESKEOF'
 [Desktop Entry]
 Name=Falkon
 Comment=Lightweight Web Browser
