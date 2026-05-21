@@ -86,10 +86,10 @@ mkdir -p /home/${USER_NAME}/Desktop
 
 cat > /home/${USER_NAME}/Desktop/browser.desktop << 'DESKEOF'
 [Desktop Entry]
-Name=Falkon
-Comment=Lightweight Web Browser
-Exec=falkon --no-sandbox --disable-gpu --disable-software-rasterizer %u
-Icon=falkon
+Name=Chromium
+Comment=Web Browser
+Exec=chromium --no-sandbox --disable-gpu --disable-dev-shm-usage %u
+Icon=chromium
 Terminal=false
 Type=Application
 Categories=Network;WebBrowser;
@@ -126,9 +126,9 @@ chmod +x /home/${USER_NAME}/Desktop/*.desktop
 mkdir -p /home/${USER_NAME}/.config
 cat > /home/${USER_NAME}/.config/mimeapps.list << 'MIMEEOF'
 [Default Applications]
-text/html=falkon.desktop
-x-scheme-handler/http=falkon.desktop
-x-scheme-handler/https=falkon.desktop
+text/html=chromium.desktop
+x-scheme-handler/http=chromium.desktop
+x-scheme-handler/https=chromium.desktop
 MIMEEOF
 
 # ── Fix ownership ─────────────────────────────────────────────────────────────
